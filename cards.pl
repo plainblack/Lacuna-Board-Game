@@ -20,7 +20,6 @@ sub init {
 
 sub generate_decks {
     foreach my $deck (@{$config->get('decks')}) {
-        next if $deck->{name} eq 'Production';
         generate_deck($deck);
     }
 }
