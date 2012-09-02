@@ -53,11 +53,23 @@ sub generate_card {
     }
     say $card->Composite(compose => 'over', image => $image, x => 100, y => 165);
     $card->Set(font => 'promethean.ttf', pointsize => 35);
-    say $card->Annotate(text => wrap($attributes->{description}, $card, 400), x => 100, y => 600, font => 'promethean.ttf', fill => 'white', pointsize => 35);
-    say $card->Draw(stroke => $attributes->{left}, fill => $attributes->{left}, strokewidth=>1, primitive=>'polygon', points=>'65,400 65,450 40,425') if $attributes->{left};
-    say $card->Draw(stroke => $attributes->{right}, fill => $attributes->{right}, strokewidth=>1, primitive=>'polygon', points=>'535,400 535,450 560,425') if $attributes->{right};
-    say $card->Draw(stroke => $attributes->{top}, fill => $attributes->{top}, strokewidth=>1, primitive=>'polygon', points=>'275,65 325,65 300,40') if $attributes->{top};
-    say $card->Draw(stroke => $attributes->{bottom}, fill => $attributes->{bottom}, strokewidth=>1, primitive=>'polygon', points=>'275,760 325,760 300,785') if $attributes->{bottom};
+    my $text_y = 610;
+    my $icon_x_mod = 0;
+
+    foreach my $icon_data (@{$attributes->{icons}}) {
+        my $icon = Image::Magick->new;
+        say $icon->ReadImage($icon_data->{image});
+        say $card->Composite(compose => 'over', image => $icon, x => 100 + $icon_x_mod, y => 610 - 40);
+        say $card->Annotate(text => $icon_data->{description}, x => 165 + $icon_x_mod, y => 610, font => 'promethean.ttf', fill => 'white', pointsize => 35);
+        $text_y = 610 + 70;
+        $icon_x_mod += 130;    
+    }
+
+    say $card->Annotate(text => wrap($attributes->{description}, $card, 400), x => 100, y => $text_y, font => 'promethean.ttf', fill => 'white', pointsize => 35);
+    say $card->Draw(stroke => $attributes->{left}, fill => $attributes->{left}, strokewidth=>1, primitive=>'polygon', points=>'75,400 75,450 50,425') if $attributes->{left};
+    say $card->Draw(stroke => $attributes->{right}, fill => $attributes->{right}, strokewidth=>1, primitive=>'polygon', points=>'525,400 525,450 550,425') if $attributes->{right};
+    say $card->Draw(stroke => $attributes->{top}, fill => $attributes->{top}, strokewidth=>1, primitive=>'polygon', points=>'275,75 325,75 300,50') if $attributes->{top};
+    say $card->Draw(stroke => $attributes->{bottom}, fill => $attributes->{bottom}, strokewidth=>1, primitive=>'polygon', points=>'275,750 325,750 300,775') if $attributes->{bottom};
     $card->Write($out_path.'/'.$attributes->{name}.'.png');
 }
 
