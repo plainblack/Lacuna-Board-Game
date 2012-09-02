@@ -61,8 +61,8 @@ sub generate_card {
         say $icon->ReadImage($icon_data->{image});
         say $card->Composite(compose => 'over', image => $icon, x => 100 + $icon_x_mod, y => 610 - 40);
         say $card->Annotate(text => $icon_data->{description}, x => 165 + $icon_x_mod, y => 610, font => 'promethean.ttf', fill => 'white', pointsize => 35);
-        $text_y = 610 + 70;
-        $icon_x_mod += 130;    
+        $text_y = 610 + 60;
+        $icon_x_mod += 140;    
     }
 
     say $card->Annotate(text => wrap($attributes->{description}, $card, 400), x => 100, y => $text_y, font => 'promethean.ttf', fill => 'white', pointsize => 35);
