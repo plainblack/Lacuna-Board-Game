@@ -16,6 +16,7 @@ generate_decks();
 ## subs
 sub init {
     remove_tree $config->get('out_path');
+    make_path $config->get('out_path');
 }
 
 sub generate_decks {
@@ -27,12 +28,30 @@ sub generate_decks {
 sub generate_deck {
     my $deck = shift;
     my $out_path = $config->get('out_path').'/'.$deck->{name};
-        say $out_path;
+    say $out_path;
+    generate_deck_back($out_path, $deck);
     make_path $out_path;
     foreach my $card (@{$deck->{cards}}) {
         say $card->{name};
         generate_card($out_path, $deck, $card);
     }
+}
+
+sub generate_deck_back {
+    my ($out_path, $deck) = @_;
+    say "generating deck back";
+    my $card = Image::Magick->new(size=>$deck->{size});
+    say $card->ReadImage('canvas:white');
+    my $surface = Image::Magick->new;
+    say $surface->ReadImage($deck->{background});
+    say $surface->Rotate(90);
+    say $surface->Resize($deck->{size}.'!');
+    say $card->Composite(compose => 'over', image => $surface, x => 0, y => 0);
+    say $card->Rotate(-90);
+    say $card->Annotate(text => $deck->{name}, font => 'ALIEN5.ttf', fill => 'white', pointsize => 200, gravity => 'Center');
+    say $card->Rotate(90);
+    #say $card->Draw(stroke=>'red', fill => 'none', strokewidth=>1, primitive=>'rectangle', points=>'38,38 562,787');
+    say $card->Write($out_path.'.png');
 }
 
 sub generate_card {
@@ -70,7 +89,7 @@ sub generate_card {
     say $card->Draw(stroke => $attributes->{right}, fill => $attributes->{right}, strokewidth=>1, primitive=>'polygon', points=>'525,400 525,450 550,425') if $attributes->{right};
     say $card->Draw(stroke => $attributes->{top}, fill => $attributes->{top}, strokewidth=>1, primitive=>'polygon', points=>'275,75 325,75 300,50') if $attributes->{top};
     say $card->Draw(stroke => $attributes->{bottom}, fill => $attributes->{bottom}, strokewidth=>1, primitive=>'polygon', points=>'275,750 325,750 300,775') if $attributes->{bottom};
-    $card->Write($out_path.'/'.$attributes->{name}.'.png');
+    say $card->Write($out_path.'/'.$attributes->{name}.'.png');
 }
 
 # This function will wrap at a space or hyphen, and if a word is longer than a
