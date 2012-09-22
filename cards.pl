@@ -51,7 +51,11 @@ sub generate_deck_back {
     say $card->Rotate(-90);
     say $card->Annotate(text => $deck->{name}, font => 'ALIEN5.ttf', fill => 'white', pointsize => 200, gravity => 'Center');
     say $card->Rotate(90);
-    #say $card->Draw(stroke=>'red', fill => 'none', strokewidth=>1, primitive=>'rectangle', points=>'38,38 562,787');
+
+    # draw cut line
+    if ($deck->{show_cut_line}) {
+        say $card->Draw(stroke=>'red', fill => 'none', strokewidth=>1, primitive=>'rectangle', points=>'38,38 562,787');
+    }
     say $card->Write($out_path.'.png');
 }
 
@@ -68,11 +72,6 @@ sub generate_card {
     say $surface->Rotate(90);
     say $surface->Resize($deck->{size}.'!');
     say $card->Composite(compose => 'over', image => $surface, x => 0, y => 0);
-
-    # display cut line
-    if ($deck->{show_cut_line}) {
-        say $card->Draw(stroke=>'red', fill => 'none', strokewidth=>1, primitive=>'rectangle', points=>'38,38 562,787');
-    }
 
     # add the card's title
     say $card->Annotate(text => $attributes->{name}, font => 'ALIEN5.ttf', y => -275, fill => 'white', pointsize => 70, gravity => 'Center');
@@ -108,15 +107,46 @@ sub generate_card {
     say $card->Annotate(text => wrap($attributes->{description}, $card, 400), x => 100, y => $text_y, font => 'promethean.ttf', fill => 'white', pointsize => 35);
 
     # connection points
-    say $card->Draw(stroke => $attributes->{left}, fill => $attributes->{left}, strokewidth=>1, primitive=>'polygon', points=>'75,400 75,450 50,425') if $attributes->{left};
-    say $card->Draw(stroke => $attributes->{right}, fill => $attributes->{right}, strokewidth=>1, primitive=>'polygon', points=>'525,400 525,450 550,425') if $attributes->{right};
-    say $card->Draw(stroke => $attributes->{top}, fill => $attributes->{top}, strokewidth=>1, primitive=>'polygon', points=>'275,75 325,75 300,50') if $attributes->{top};
-    say $card->Draw(stroke => $attributes->{bottom}, fill => $attributes->{bottom}, strokewidth=>1, primitive=>'polygon', points=>'275,750 325,750 300,775') if $attributes->{bottom};
+    draw_connection_point($card, $attributes->{left}, 90, 0, 390); 
+    draw_connection_point($card, $attributes->{right}, 270, 515, 390); 
+    draw_connection_point($card, $attributes->{top}, 180, 265, 0); 
+    draw_connection_point($card, $attributes->{bottom}, 0, 265, 740); 
 
+    # display cut line
+    if ($deck->{show_cut_line}) {
+        say $card->Draw(stroke=>'red', fill => 'none', strokewidth=>1, primitive=>'rectangle', points=>'38,38 562,787');
+    }
 
     # save the card to disk
     say $card->Write($out_path.'/'.$attributes->{name}.'.png');
 }
+
+sub draw_connection_point {
+    my ($card, $color, $rotation, $x, $y) = @_;
+    if ($color) {
+        # draw a half circle
+        my $half_circle  = Image::Magick->new(size=>'70x35');
+        say $half_circle->ReadImage('canvas:transparent');
+        say $half_circle->Draw(stroke => $color, fill => $color, strokewidth=>1, primitive=>'circle', points=>'35,35, 35,70');
+
+        # create the connection point image
+        my $connection = Image::Magick->new(size=>'70x85');
+        say $connection->ReadImage('canvas:transparent');
+
+        # add the half circle to the connection point
+        say $connection->Composite(compose => 'over', image => $half_circle, x => 0, y => 0);
+
+        # extend the connection point the the edge
+        say $connection->Draw(stroke=>$color, fill => $color, strokewidth=>1, primitive=>'rectangle', points=>'0,35 70,85');
+
+        # orient the connection point for its position 
+        say $connection->Rotate($rotation);
+
+        # apply the connection point to the image
+        say $card->Composite(compose => 'over', image => $connection, x => $x, y => $y);
+    }
+}
+
 
 # This function will wrap at a space or hyphen, and if a word is longer than a
 # line it will just break it at the end of the first line. To figure out the
