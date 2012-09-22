@@ -21,6 +21,7 @@ sub init {
 
 sub generate_decks {
     foreach my $deck (@{$config->get('decks')}) {
+        next unless $deck->{enabled};
         generate_deck($deck);
     }
 }
@@ -65,6 +66,8 @@ sub generate_card {
     say $card->Composite(compose => 'over', image => $surface, x => 0, y => 0);
     #say $card->Draw(stroke=>'red', fill => 'none', strokewidth=>1, primitive=>'rectangle', points=>'38,38 562,787');
     say $card->Annotate(text => $attributes->{name}, font => 'ALIEN5.ttf', y => -275, fill => 'white', pointsize => 70, gravity => 'Center');
+    my $pips = '.' x $attributes->{quantity};
+    say $card->Annotate(text => $pips, y => -340, fill => 'white', pointsize => 70, gravity => 'Center');
     my $image = Image::Magick->new;
     say $image->ReadImage($attributes->{image});
     if ($attributes->{resize}) {
