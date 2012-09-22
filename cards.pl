@@ -57,27 +57,44 @@ sub generate_deck_back {
 
 sub generate_card {
     my ($out_path, $deck, $attributes) = @_;
+
+    # create a new blank card
     my $card = Image::Magick->new(size=>$deck->{size});
     say $card->ReadImage('canvas:white');
+
+    # add the backdround to the card
     my $surface = Image::Magick->new;
     say $surface->ReadImage($attributes->{background} || $deck->{background});
     say $surface->Rotate(90);
     say $surface->Resize($deck->{size}.'!');
     say $card->Composite(compose => 'over', image => $surface, x => 0, y => 0);
-    #say $card->Draw(stroke=>'red', fill => 'none', strokewidth=>1, primitive=>'rectangle', points=>'38,38 562,787');
+
+    # display cut line
+    if ($deck->{show_cut_line}) {
+        say $card->Draw(stroke=>'red', fill => 'none', strokewidth=>1, primitive=>'rectangle', points=>'38,38 562,787');
+    }
+
+    # add the card's title
     say $card->Annotate(text => $attributes->{name}, font => 'ALIEN5.ttf', y => -275, fill => 'white', pointsize => 70, gravity => 'Center');
+
+    # add a pip for each quanity count of the card
     my $pips = '.' x $attributes->{quantity};
     say $card->Annotate(text => $pips, y => -340, fill => 'white', pointsize => 70, gravity => 'Center');
+
+    # add the foreground image to the card
     my $image = Image::Magick->new;
     say $image->ReadImage($attributes->{image});
     if ($attributes->{resize}) {
         say $image->Resize('400x400');
     }
     say $card->Composite(compose => 'over', image => $image, x => 100, y => 165);
+
+    # set up for text description and icons for card abilities
     $card->Set(font => 'promethean.ttf', pointsize => 35);
     my $text_y = 610;
     my $icon_x_mod = 0;
 
+    # card ability icons
     foreach my $icon_data (@{$attributes->{icons}}) {
         my $icon = Image::Magick->new;
         say $icon->ReadImage($icon_data->{image});
@@ -87,11 +104,17 @@ sub generate_card {
         $icon_x_mod += 140;    
     }
 
+    # card ability text
     say $card->Annotate(text => wrap($attributes->{description}, $card, 400), x => 100, y => $text_y, font => 'promethean.ttf', fill => 'white', pointsize => 35);
+
+    # connection points
     say $card->Draw(stroke => $attributes->{left}, fill => $attributes->{left}, strokewidth=>1, primitive=>'polygon', points=>'75,400 75,450 50,425') if $attributes->{left};
     say $card->Draw(stroke => $attributes->{right}, fill => $attributes->{right}, strokewidth=>1, primitive=>'polygon', points=>'525,400 525,450 550,425') if $attributes->{right};
     say $card->Draw(stroke => $attributes->{top}, fill => $attributes->{top}, strokewidth=>1, primitive=>'polygon', points=>'275,75 325,75 300,50') if $attributes->{top};
     say $card->Draw(stroke => $attributes->{bottom}, fill => $attributes->{bottom}, strokewidth=>1, primitive=>'polygon', points=>'275,750 325,750 300,775') if $attributes->{bottom};
+
+
+    # save the card to disk
     say $card->Write($out_path.'/'.$attributes->{name}.'.png');
 }
 
