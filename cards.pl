@@ -41,21 +41,33 @@ sub generate_deck {
 sub generate_deck_back {
     my ($out_path, $deck) = @_;
     say "generating deck back";
+
+    # create blank card
     my $card = Image::Magick->new(size=>$deck->{size});
     say $card->ReadImage('canvas:white');
+
+    # add the background
     my $surface = Image::Magick->new;
     say $surface->ReadImage($deck->{background});
     say $surface->Rotate(90);
     say $surface->Resize($deck->{size}.'!');
     say $card->Composite(compose => 'over', image => $surface, x => 0, y => 0);
+
+    # set the card orientation to make the text write horizontally
     say $card->Rotate(-90);
-    say $card->Annotate(text => $deck->{name}, font => 'ALIEN5.ttf', fill => 'white', pointsize => 200, gravity => 'Center');
+
+    # write the deck title
+    say $card->Annotate(text => $deck->{name}, font => 'ALIEN5.ttf', fill => 'white', pointsize => 200, y => 20, gravity => 'Center');
+
+    # reorient the card
     say $card->Rotate(90);
 
     # draw cut line
     if ($deck->{show_cut_line}) {
         say $card->Draw(stroke=>'red', fill => 'none', strokewidth=>1, primitive=>'rectangle', points=>'38,38 562,787');
     }
+
+    # save the image to disk
     say $card->Write($out_path.'.png');
 }
 
@@ -94,13 +106,12 @@ sub generate_card {
     my $icon_x_mod = 0;
 
     # card ability icons
-    foreach my $icon_data (@{$attributes->{icons}}) {
+    foreach my $icon_file (@{$attributes->{icons}}) {
         my $icon = Image::Magick->new;
-        say $icon->ReadImage($icon_data->{image});
+        say $icon->ReadImage($icon_file);
         say $card->Composite(compose => 'over', image => $icon, x => 100 + $icon_x_mod, y => 610 - 40);
-        say $card->Annotate(text => $icon_data->{description}, x => 165 + $icon_x_mod, y => 610, font => 'promethean.ttf', fill => 'white', pointsize => 35);
         $text_y = 610 + 60;
-        $icon_x_mod += 140;    
+        $icon_x_mod += 80;    
     }
 
     # card ability text
