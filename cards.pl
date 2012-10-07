@@ -4,10 +4,21 @@ use File::Path qw(make_path remove_tree);
 use 5.010;
 use Config::JSON;
 use utf8;
+use Getopt::Long;
 
 ## settings
 my $assets = '/data/Lacuna-Assets/';
-my $config = Config::JSON->new('game.conf');
+my $config_file;
+GetOptions(
+    'config=s' => \$config_file,
+    'assets=s' => \$assets,
+);
+unless ($config_file) {
+    say "Usage: $0 --config=game.conf";
+    exit;
+}
+
+my $config = Config::JSON->new($config_file);
 
 ## main
 init();
