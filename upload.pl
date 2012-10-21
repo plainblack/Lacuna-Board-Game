@@ -29,15 +29,15 @@ my $session = tgc_post('session',[
 say "Fetching user";
 my $user = tgc_get('user/'.$session->{user_id},[
     session_id  => $session->{id},
-    include_related_objects => 1,
-    include_relationships => 1,
+    _include_related_objects => 1,
+    _include_relationships => 1,
 ]);
 
 # get game
 say "Fetching game details";
 my $game = tgc_get('game/'.$config->get('game_id'), [
     session_id  => $session->{id},
-    include_relationships => 1,
+    _include_relationships => 1,
 ]);
 
 # delete old decks
