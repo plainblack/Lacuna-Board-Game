@@ -1,0 +1,105 @@
+<html>
+<head><title>Designing Board Games With Perl - Part 2: Uploading to The Game Crafter</title></head>
+<body>
+
+<h1>Designing Board Games With Perl - Part 2</h1>
+<p>
+In my last article I described how to create board game images using Image::Magick, thus allowing you to design board games using Perl. This time I want to show you how to upload those images to <a href="https://www.thegamecrafter.com/">The Game Crafter</a> so you get get a professional copy of the game manufactured.
+</p> 
+
+<p>
+In the last article we <a href="https://www.thegamecrafter.com/games/lacuna-expanse:-a-new-empire">created a board game version</a> of the video game called <a href="http://www.lacunaexpanse.com">The Lacuna Expanse</a>. This time we'll learn how to upload those images to the site so we can create our own custom board game.
+</p>
+
+<h2>Getting Ready</h2>
+
+<p>
+First, get yourself a copy of <a href="http://search.cpan.org/~rizen/TheGameCrafter-Client/lib/TheGameCrafter/Client.pm">TheGameCrafter::Client</a>. It's a Perl module that makes it trivial to interact with The Game Crafter's RESTful web service API. When you <code>use TheGameCrafter::Client;</code> it imports <code>tgc_get()</code>, <code>tgc_post()</code>, <code>tgc_put()</code>, and <code>tgc_delete()</code> into your program for easy use. From there you can have a look at The Game Crafter's <a href="https://www.thegamecrafter.com/developer/">developer documentation</a> to do any custom stuff you want.
+</p>
+
+<p>
+You'll also need to activate the <a href="https://www.thegamecrafter.com/account">developer setting in your TGC account</a>, and <a href="https://www.thegamecrafter.com/account/apikeys">request an API key</a>.
+</p>
+
+<h2>Let's Do This Thing Already</h2>
+
+<p>
+First we need to authenticate. 
+<pre><code>
+ my $session = tgc_post('session',{
+   username    => 'me',
+   password    => '123qwe',
+   api_key_id  => 'abcdefhij',
+ });
+</code></pre>
+</p>
+
+<p>
+Before we can start uploading, we should fetch our user account information because there are several pieces of info there that we can use.
+<pre><code>
+ my $user = tgc_get('user', {
+   session_id	=> $session->{id},           # using our session to do stuff
+});
+</code></pre>
+</p>
+
+<p>
+Now we can create a folder and upload our first file.
+<pre><code>
+ my $folder = tgc_post('folder', {
+  session_id	=> $session->{id},
+  name		=> 'Lacuna',
+  user_id 	=> $user->{id},
+  parent_id	=> $user->{root_folder_id},  # putting this in our home folder
+ });
+
+ my $file = tgc_post('file', {
+  session_id	=> $session->{id},
+  name		=> 'Mayhem Training',
+  file		=> ['mayhem.png'],	     # the array ref signifies this is a file path
+  folder_id	=> $folder->{id},            # putting it in the folder we just created
+ });
+</code></pre>
+</p>
+
+<p>
+Assuming at this point we've uploaded all of our files, we can now build out our game. The Game Crafter has this notion of a "Designer", which is sort of like your very own publishing company. Games are attached to the designer, so first we need to create the designer, then we can create the game.
+<pre><code>
+ my $designer = tgc_post('designer', {
+  session_id	=> $session->{id},
+  user_id 	=> $user->{id},
+  name		=> 'Lacuna Expanse Corp',
+ });
+
+ my $game = tgc_post('game', {
+  session_id	=> $session->{id},
+  designer_id	=> $designer->{id},
+  name		=> 'Lacuna Expanse: A New Empire',
+ });
+</code></pre>
+</p>
+
+<p>
+And now we need to create our deck of cards. This is pretty straight forward just like before.
+<pre><code>
+ my $deck = tgc_post('minideck', {
+  session_id	=> $session->{id},
+  name		=> 'Planet',
+  game_id	=> $game->{id},
+ });
+
+ my $card = tgc_post('minicard', {
+  session_id	=> $session->{id},
+  name		=> 'Mayhem Training',
+  face_id	=> $file->{id},
+  deck_id	=> $deck->{id},
+ });
+</code></pre>
+</p>
+
+<p>
+And just like that we've created a game and added a deck of cards to it. There are of course lots of other fancy things you can do with the API, but this should get you started. I wouldn't leave you hanging there, however. I've <a href="https://github.com/plainblack/Lacuna-Board-Game">open sourced the actual code</a> I used to create <a href="https://www.thegamecrafter.com/games/lacuna-expanse:-a-new-empire">the Lacuna Expanse board game</a> so you'd have something to reference. There's also a <a href="https://community.thegamecrafter.com/forums/developers">developer's forum</a> if you have any questions. Good luck to you, and happy gaming!
+</p>
+
+</body>
+</html>

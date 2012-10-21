@@ -1,0 +1,167 @@
+<html>
+<head><title>Designing Board Games With Perl - Part 1: Making Images</title></head>
+<body>
+
+<h1>Designing Board Games With Perl - Part 1</h1>
+
+<p>
+Board games are hotter than they've ever been. In fact, <a href="http://www.icv2.com/articles/news/24066.html">the board game market has grown 25% in the past year while the video game market shrank 20%</a>. But you're a Perl hacker, not an Adobe Illustrator, so how can you design a board game? Well, that's exactly what I aim to show you in this article.
+</p>
+<p>
+First, you need an idea. You can turn literally anything into a game. 
+<a href="https://www.thegamecrafter.com/games/adventurelings" title="Adventurelings">Whether</a>
+<a href="https://www.thegamecrafter.com/games/plague-the-card-game" title="Plague">you</a> 
+<a href="https://www.thegamecrafter.com/games/merc" title="MERC">just</a>
+<a href="https://www.thegamecrafter.com/games/the-decktet-firmament-" title="The Decktet">want</a>
+<a href="https://www.thegamecrafter.com/games/zombiezone" title="ZombieZone">to</a>
+<a href="https://www.thegamecrafter.com/games/surviving-design-projects" title="Surviving Design Projects">design</a>
+<a href="https://www.thegamecrafter.com/games/rejection-therapy-the-game" title="Rejection Therapy">your</a>
+<a href="https://www.thegamecrafter.com/games/hackers-agents" title="Hackers and Agents">own</a>
+<a href="https://www.thegamecrafter.com/games/the-tarat" title="The TaRat">custom</a>
+<a href="https://www.thegamecrafter.com/games/wild-pursuit-" title="Wild Pursuit">playing</a>
+<a href="https://www.thegamecrafter.com/games/jump-gate" title="Jump Gate">cards</a>,
+<a href="https://www.thegamecrafter.com/games/sandwich-city" title="Sandwich City">or</a>
+<a href="https://www.thegamecrafter.com/games/shake-out-" title="Shake Out">you</a>
+<a href="https://www.thegamecrafter.com/games/trade-fleet" title="Trade Fleet">want</a>
+<a href="https://www.thegamecrafter.com/games/diggity" title="Diggity">to</a>
+<a href="https://www.thegamecrafter.com/games/elemental-clash:-the-basic-set" title="Elemental Clash">make</a>
+<a href="https://www.thegamecrafter.com/games/black-and-red" title="Black and Red Playing Cards">a</a>
+<a href="https://www.thegamecrafter.com/games/frogs-" title="Frogs!">full</a>
+<a href="https://www.thegamecrafter.com/games/phytocats" title="Phytocats">on</a>
+<a href="https://www.thegamecrafter.com/games/city-of-gears" title="City of Gears">custom</a>
+<a href="https://www.thegamecrafter.com/games/gibs" title="Gibs">board</a>
+<a href="https://www.thegamecrafter.com/games/dr-pergias-race" title="Doctor Pergaias' Race Across The Continent">or</a>
+<a href="https://www.thegamecrafter.com/games/goblin-warlord" title="Goblin Warlord">card</a>
+<a href="https://www.thegamecrafter.com/games/braaaaains-" title="Braaaaains!">game</a>,
+<a href="https://www.thegamecrafter.com/games/the-great-race1" title="The Great Race">the</a>
+<a href="https://www.thegamecrafter.com/games/road-to-magnate" title="Road to Magnate">options</a>
+<a href="https://www.thegamecrafter.com/games/zerpang-" title="Zerpang!">are</a>
+<a href="https://www.thegamecrafter.com/games/angels-elements" title="Angels Elements">limitless</a>. 
+( Full disclosure: I'm one of the owners of <a href="https://www.thegamecrafter.com/">The Game Crafter</a>, which itself is written entirely in Perl. )
+</p>
+<p>
+For the purposes of this article, I'm going to make <a href="https://www.thegamecrafter.com/games/lacuna-expanse:-a-new-empire">a board game version</a> of the populare Perl-based web game <a href="http://www.lacunaexpanse.com">The Lacuna Expanse</a>. ( Full disclosure: I'm also one of the owners of Lacuna. ) I chose this because I already have some artwork for it, albeit not in board game form. However, <a href="https://community.thegamecrafter.com/publish/file-preparation/art-resources">you can get free art from various sites around the web</a>.
+</p>
+<p>
+My Lacuna based board game will basically be a tile placement game where all the players are working together cooperatively to fend off an alien invasion. 
+</p>
+<h2>Let's Get To The Perl Already!</h2>
+<p>
+There are several great image manipulation libraries on the CPAN, but my personal favorite is <a href="http://search.cpan.org/~jcristy/PerlMagick-6.77/Magick.pm.in">Image::Magick</a>. To start with we need to create a base image that we can start manipulating. You can look up the size of image you need to create for the type of component you're trying to create <a href="https://www.thegamecrafter.com/publish/pricing">here</a>. In my case I decided that I want to use <a href="https://community.thegamecrafter.com/publish/templates/cards/mini-cards">mini cards</a>, because there will be a lot on the table so you'd run out of space quickly if you used full sized poker cards.
+<pre><code> my $card = Image::Magick-&gt;new(size=&gt;'600x825');
+ say $card-&gt;ReadImage('canvas:white');
+</code></pre>
+Note that I used <code>say</code> in front of the <code>ReadImage</code> call. This is because Image::Magick will output a text based exception on each call if anything goes wrong. I could easily wrap that with better error handling, but for now just printing it out to the screen is sufficient for my needs.
+</p>
+<p>
+When printing things you also have to take into account something called <a href="http://youtu.be/NqZSFpmS2dM">bleed and cut lines</a>. So let's draw the cut line on the card in red so we know where the limit of our content should be.
+<pre><code> say $card-&gt;Draw(stroke=&gt;'red', fill =&gt; 'none', strokewidth=&gt;1, primitive=&gt;'rectangle', points=&gt;'38,38 562,787');
+</code></pre>
+</p>
+<img src="blank.jpg" alt="blank with cut lines">
+<p>
+So far so good. Ok, let's give this card a background so that it starts to look like a card. For this I'll take one of the planet surface images from the Lacuna Expanse and rotate it and stretch it to fit the shape of the card.
+<pre><code> my $surface = Image::Magick-&gt;new;
+ say $surface-&gt;ReadImage('surface-p17.jpg');
+ say $surface-&gt;Rotate(90);
+ say $surface-&gt;Resize('600x825!');
+ say $card-&gt;Composite(compose =&gt; 'over', image =&gt; $surface, x =&gt; 0, y =&gt; 0);
+</code></pre>
+Note the exclamation point (<b>!</b>) on the <code>Resize</code> command. That tells Image::Magick that we want to distort the native aspect ratio of the image. In other words, stretch the image to fill the size I've specified. 
+</p>
+<img src="background.jpg" alt="background">
+<p>
+You may have noticed that this image looks enormous. That's because we're generating it for print rather than screens. Print has more <a href="http://proshooter.com/article_whatisa300dpiJPeg.htm">pixels per inch/centimeter</a> than screens, thus the image looks bigger when you display it on a screen.
+</p>
+<p>
+Now let's give the card a title. Adding text to the image is pretty straight forward.
+<pre><code> $card-&gt;Annotate(text =&gt; 'Mayhem Training', font =&gt; 'ALIEN5.ttf', y =&gt; -275, fill =&gt; 'white', pointsize =&gt; 70, gravity =&gt; 'Center');
+</code></pre>
+</p>
+<img src="title.jpg" alt="title">
+<p>
+As you can see I've used a custom font here. Image::Magick is capable of using nearly any OpenType or TrueType font. 
+</p>
+<p>
+Now let's overlay the card with a picture of the Mayhem Training building from the video game. 
+<pre><code> my $image = Image::Magick-&gt;new;
+ say $image-&gt;ReadImage('mayhemtraining9.png');
+ say $card-&gt;Composite(compose =&gt; 'over', image =&gt; $image, x =&gt; 100, y =&gt; 165);
+</code></pre>
+</p>
+<img src="image.jpg" alt="added image">
+<p>
+Now we're finally getting somewhere! This is really starting to look like a card. Let's use the same technique to overlay an icon onto the card. We'll use icons to symbolize an ability that the card grants the player who uses it. You can get free icons from all over the web; one of my favorite libraries is <a href="http://www.glyphish.com">Glyphish</a>. 
+<pre><code> my $icon = Image::Magick-&gt;new;
+ say $icon-&gt;ReadImage('target.png');
+ say $card-&gt;Composite(compose =&gt; 'over', image =&gt; $icon, x =&gt; 100, y =&gt; 570);
+</code></pre>
+</p>
+<img src="icon.jpg" alt="added icon">
+<p>
+You can't get away with icons all the time. So let's add some text to the card. Now this bit would be really tricky, if it weren't for <a href="http://www.imagemagick.org/discourse-server/viewtopic.php?f=7&amp;t=3708">some really neat code that Gabe Schaffer contributed to the ImageMagick forums a long time ago</a>. Basically without this code you'd have to make the text wrap at word boundaries yourself, but with it, you can just do a simple <code>Annotate</code> call like this:
+<pre><code> $card-&gt;Set(font =&gt; 'promethean.ttf', pointsize =&gt; 35);
+ my $text = 'Demolish one of your buildings to use this ability.';
+ my $text_wrapped = wrap($text, $card, 400);
+ say $card-&gt;Annotate(text =&gt; $text_wrapped, x =&gt; 100, y =&gt; 690, font =&gt; 'promethean.ttf', fill =&gt; 'white', pointsize =&gt; 35);
+</code></pre>
+</p>
+<img src="text.jpg" alt="added text">
+<p>
+A game like this wouldn't be very interesting if you could just place the cards anywhere you want. So we need to add something to the card to indicate how other cards can connect to it. This is the most challenging part yet, because I want to make a half-circle/half-rectangle connector. Since this is a bit more complicated and I want to use it for drawing connection points on various sides of the card, I'll turn it into a subroutine.
+<pre><code> sub draw_connection_point {
+   my ($card, $color, $rotation, $x, $y) = @_;
+
+   # draw a half circle, it's a half cuz we're drawing outide the image
+   my $half_circle  = Image::Magick-&gt;new(size=&gt;'70x35');
+   say $half_circle-&gt;ReadImage('canvas:transparent');
+   say $half_circle-&gt;Draw(stroke =&gt; $color, fill =&gt; $color, strokewidth=&gt;1, primitive=&gt;'circle', points=&gt;'35,35, 35,70');
+
+   # create the connection point image
+   my $connection = Image::Magick-&gt;new(size=&gt;'70x85');
+   say $connection-&gt;ReadImage('canvas:transparent');
+
+   # add the half circle to the connection point
+   say $connection-&gt;Composite(compose =&gt; 'over', image =&gt; $half_circle, x =&gt; 0, y =&gt; 0);
+
+   # extend the connection point the the edge
+   say $connection-&gt;Draw(stroke=&gt;$color, fill =&gt; $color, strokewidth=&gt;1, primitive=&gt;'rectangle', points=&gt;'0,35 70,85');
+
+   # orient the connection point for its position 
+   say $connection-&gt;Rotate($rotation);
+
+   # apply the connection point to the image
+   say $card-&gt;Composite(compose =&gt; 'over', image =&gt; $connection, x =&gt; $x, y =&gt; $y);
+ }
+
+ draw_connection_point($card, 'purple', 0, 265, 740); 
+</code></pre>
+</p>
+<img src="connection.jpg" alt="connection added">
+<p>
+Sometimes it's nice to give players hints about stuff so they can form better strategies. To that end, let's add a series of pips above the title to indicate how many copies of this card are in the deck. In this case we have only one. 
+<pre><code> my $quantity = 1;
+ my $pips = '.' x $quantity;
+ say $card-&gt;Annotate(text =&gt; $pips, y =&gt; -340, fill =&gt; 'white', pointsize =&gt; 70, gravity =&gt; 'Center');
+</code></pre>
+</p>
+<img src="finished.jpg" alt="finished">
+<p>
+Don't forget to remove the cut line! Then we can write out the file to disk.
+<pre><code> #say $card-&gt;Draw(stroke=&gt;'red', fill =&gt; 'none', strokewidth=&gt;1, primitive=&gt;'rectangle', points=&gt;'38,38 562,787');
+ say $card-&gt;Write('mayhem.png');
+</code></pre>
+</p>
+<img src="cut-line-removed.jpg" alt="cut lines removed">
+<h2>Rationale</h2>
+<p>
+So now that I've shown you how to create a card, why would we go through the work of coding it rather than just using Photoshop or the Gimp? There are lots of reasons to code it including things like you don't know how to use image editors. However, the really important reason is the same reason you write code to do anything...automation! A game isn't made of just one card. Likewise, games aren't designed in just one try, it takes lots of play testing and revisions. If you design your board game using code you can whip out a new revision as easily as changing a config file. 
+</p>
+<h2>Next Time</h2>
+<p>
+I've shown you how to create the images for your game, but the next thing you're going to want to do is print your game. You could do this at home, but it will cost you a lot of time and money (ink jet ink is for some reason priced higher than human blood). You could take it to Kinkos, but you won't get a nice quality product because they don't specialize in making games. Instead, you can upload your files to <a href="https://www.thegamecrafter.com">The Game Crafter</a>, where you'll get a custom game that looks like it game from the game store. There's a nice easy to use web interface to do this, but you're a Perl programmer. Why do something manually if you can automate it?
+</p>
+<h2>For The Impatient</h2>
+<p><a href="https://www.thegamecrafter.com/games/lacuna-expanse:-a-new-empire">The Lacuna Expanse Board Game</a> is available for purchase now if you're interested. Also, I've <a href="https://github.com/plainblack/Lacuna-Board-Game">released the code I wrote to develop it via this public GitHub repository</a>. 
+</body>
+</html>
