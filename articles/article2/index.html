@@ -21,6 +21,25 @@ First, get yourself a copy of <a href="http://search.cpan.org/~rizen/TheGameCraf
 You'll also need to activate the <a href="https://www.thegamecrafter.com/account">developer setting in your TGC account</a>, and <a href="https://www.thegamecrafter.com/account/apikeys">request an API key</a>.
 </p>
 
+<h2>A Little about The Game Crafter's API</h2>
+<p>TheGameCrafter::Client is just a tiny wrapper around our RESTful web services. I designed the web services atop <a href="http://search.cpan.org/~xsawyerx/Dancer/lib/Dancer.pm">Dancer</a> and <a href="http://search.cpan.org/~frew/DBIx-Class/lib/DBIx/Class.pm">DBIx::Class</a>. My goal with this was to build a very reliable and consistent API not only for external use but internal. You see, the entire TGC web site actually runs off these web services. Not only that, but these web services tie directly into our manufacturing facility, so they are controlling the physical world in addition to the virtual. </p>
+<p>
+With Lacuna, I built <a href="http://search.cpan.org/~rizen/JSON-RPC-Dispatcher/lib/JSON/RPC/Dispatcher.pm.orig">JSON::RPC::Dispatcher</a> (JRD), which is a JSON-RPC 2.0 web service handler on top of <a href="http://search.cpan.org/~miyagawa/Plack/lib/Plack.pm">Plack</a>. I love JRD, but it has two weaknesses, one of them fatal. One weakness is that you must format parameters using JSON, which means that it's not easy to just call a URL and get a result with something like curl. The fatal weakness of JSON-RPC 2.0 is that ther is no way to do file uploads within the spec. The Game Crafter is all about file uploads, so that meant I either needed to handle those separately (aka inconsistently), or develop something new. I opted for the latter. 
+</p>
+<p>
+With TGC's web services I decided to adopt some of the things I really liked about JSON-RPC, namely the way it handles responses whether they be result sets or errors. So you always get a consistent return:
+<pre><code>{
+   "error" : {
+        "code" : 404,
+        "message" : "File not found.",
+        "data" : "file_id"
+   }
+}</code></pre>
+</p>
+<p>
+With TGC I also wanted a consistent and easy way of turning DBIx::Class into web services through Dancer. I looked into things like <a href="http://search.cpan.org/~oliver/Catalyst-Plugin-AutoCRUD-2.122460/lib/Catalyst/Plugin/AutoCRUD.pm">AutoCRUD</a>, but I'm not a fan of Catalyst, and it also took too much configuration (in my opinion) to get it working. I wanted something simpler and faster, so I decided to roll my own. In so doing, I ended up creating a little glue layer that is now in use in all web app development within <a href="http://www.plainblack.com">Plain Black</a>, and eventually we'll be releasing it onto CPAN for all to use. More on that in a future article.
+</p>
+
 <h2>Let's Do This Thing Already</h2>
 
 <p>
