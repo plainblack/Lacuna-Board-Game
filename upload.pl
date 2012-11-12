@@ -95,6 +95,15 @@ foreach my $deck_config (@{$config->get('decks')}) {
             file        => [$out_path .'/'. $card_config->{name}.'.png'],
             session_id  => $session->{id},
         ]);
+        my $override_back;
+        if ($card_config->{override_back}) {
+            $override_back = tgc_post('file',[
+                name        => $card_config->{name}.' background',
+                folder_id   => $folder->{id},
+                file        => [$card_config->{override_back}],
+                session_id  => $session->{id},
+            ]);
+        }
         say "Creating card";
         my $card = tgc_post('minicard', [
             name                => $card_config->{name},
@@ -102,6 +111,7 @@ foreach my $deck_config (@{$config->get('decks')}) {
             deck_id             => $deck->{id},
             session_id          => $session->{id},
             face_id             => $face->{id},
+            back_id             => ($card_config->{override_back} ? $override_back->{id} : $back->{id}),
             has_proofed_face    => 1,
         ]);
     }
